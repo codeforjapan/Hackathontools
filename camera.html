@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>RTCamera</title>
+<style>
+html,body{
+  height: 100%;
+}
+</style>
+<script>
+function init(){
+  var video = document.getElementById('myVideo');
+
+  navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+  navigator.getUserMedia({video: true}, function (stream){
+    if (window.URL) {
+      video.src = window.URL.createObjectURL(stream);
+    }else{
+      video.src = stream;
+    }
+  },function (err) {
+    console.log(err);
+  });
+}
+</script>
+
+</head>
+<body onload="init()">
+  <video id="myVideo" width="100%" height="100%" autoplay=""></video>
+</body>
+</html>
