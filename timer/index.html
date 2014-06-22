@@ -1,0 +1,112 @@
+<html>
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+  <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+  <script src="js/jquery.knob.js"></script>
+  <script src="js/jquery.knob.timer.js"></script>
+  <script src="js/huetimer.js"></script>
+  <style>
+  body {
+    background-color: #000000;
+  }
+  #timerbox{margin: 0 auto;text-align:center;height:100%;vertical-center:middle;}
+  .qa{position:absolute;top:100;}
+  #qabox{position:absolute;top:0;width:100%;text-align:center;height:100%;vertical-align: middle;}
+  #bridgeinfo{position:absolute;top:0;color:#fff;text-align:center;margin:0 auto;width:100%; display:none;}
+  #setting{position:absolute;top:4px;left:32px;color:#fff;width:100%;}
+  #setbutton{position:absolute;top:4px;left:4px;}
+  </style>
+</head>
+<body>
+  <img src="btn_setting.png" id="setbutton"/>
+  <div id="setting">
+    <form>
+      <input type="hidden" name="bridgeip" value="" id="bridgeipinput2"></input>
+      MaxTime(seconds):<input type="input" name="maxtime" value="" size="4"></input>
+      SecondTime(seconds):<input type="input" name="secondtime" value="" size="4"></input>
+      Hue ID(comma separated):<input type="input" name="lights" value="" size="8"></input>
+      <input type="submit" name="submit"></input><br/>
+    </form>
+  </div>
+  <div id="timerbox">
+    <input class="knob" data-width="200" data-displayPrevious=true value="0">
+    <div id="qabox">
+      <input class="qa" data-width="200" data-displayPrevious=true value="0">
+    </div>
+  </div>
+  <div id="bridgeinfo">
+      <form>
+      <p id="errormsg">Please set Bridge IP and press Bridge button, then submit button</p>
+      Bridge IP:<input type="text" name="bridgeip" id="bridgeipinput"></input><input type="submit" name="submit"></input><br/>
+      <img src="press_smartbridge.png">
+  </div>
+  <script>
+    $.urlParam = function(name){
+        var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        if (results==null){
+           return null;
+        }
+        else{
+           return results[1] || 0;
+        }
+    }
+    $("#setting").offset({left: $("#setting").width() * -1});
+    var bridgeip = $.urlParam("bridgeip");
+    var maxTime = $.urlParam("maxtime") || 180;
+    $("input[name=maxtime]").val(maxTime);
+    var secondtime = $.urlParam("secondtime") || 120;
+    $("input[name=secondtime").val(secondtime);
+    var lights = null;
+    if ($.urlParam("lights") != null && $.urlParam("lights") != ""){
+      lights = decodeURIComponent($.urlParam("lights"));
+      $("input[name=lights").val(lights);
+      if (lights != null){
+        lights = lights.split(",")
+      }
+    }
+    if (bridgeip != null && bridgeip != ""){
+      $("#bridgeipinput2").val(bridgeip);
+      $("#bridgeinfo").hide();
+      var hueTimer = Object.create(HueTimer,{bridgeIP:bridgeip,
+          debugMode:false,
+          lights: lights,
+          pressBridge:function(msg){
+            $("#errormsg").html(msg);
+            $("#bridgeinfo").show();
+            $("#bridgeipinput").val(bridgeip);
+            $("#bridgeipinput2").val(bridgeip);
+            $("#bridgeipinput").focus();
+          },
+        });
+      // check registration
+      hueTimer.registration();
+    }
+
+    var width=$(document).width();
+    var height=$(document).height();
+    console.log(height);
+    $('.knob').timer({
+        'width':Math.floor(height * 0.8),
+        'height':Math.floor(height * 0.8),
+        notifyObject:hueTimer,
+        maxTime: maxTime,
+        secondTime: secondtime
+        });
+    $('#timerbox').offset({'top':height * 0.1})
+    $('#qabox').offset({top:height * 0.8 * 0.25});
+    $('#qabox').hide()
+    $('#setbutton').hover(function(){
+        $('#setbutton').css( 'cursor', 'pointer' );
+        });
+
+    $('#setbutton').click(function(){
+        if ($("#setting").offset().left < 0){
+          $("#setting").animate({left: 32}, "slow");
+          }else{
+          $("#setting").animate({left: $("#setting").width() * -1}, "slow");
+        }
+        });
+  </script>
+  <audio id="audio" src="voices/timeup.mp3" type="audio/mpeg" preload="auto">
+</body>
+</html>
